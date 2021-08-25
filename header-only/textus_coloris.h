@@ -166,28 +166,31 @@ static char *cstring(const char *fmt, va_list args)
 {
 	va_list args2;
 	char *buf = NULL;
-	char *cstr;
+	char *cstr = NULL;
 	size_t buf_sz = 0;
 	int len;
 
 	va_copy(args2, args);
 	len = vsnprintf(buf, buf_sz, fmt, args);
 	if (len < 0)
-		return NULL;
+		goto out_vargs;
 
 	buf_sz = (size_t)len + 1;
 	buf = malloc(buf_sz);
 	if (!buf)
-		return NULL;
+		goto out_vargs;
 
 	len = vsnprintf(buf, buf_sz, fmt, args2);
 	if (len < 0) {
 		free(buf);
-		return NULL;
+		goto out_vargs;
 	}
 
 	cstr = parser(buf);
 	free(buf);
+
+out_vargs:
+	va_end(args2);
 
 	return cstr;
 }

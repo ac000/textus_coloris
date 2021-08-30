@@ -31,7 +31,7 @@ Forces colour output off..
 TC_COLORIS_MODE_ON
 ```
 
-Forces colour output on, regardless of the [NO\_COLOR](#nocolor) setting.
+Forces colour output on, regardless of the [NO\_COLOR](#no_color) setting.
 
 ```C
 TC_COLORIS_MODE_AUTO

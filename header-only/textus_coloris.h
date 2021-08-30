@@ -37,6 +37,12 @@
 extern "C" {
 #endif
 
+enum tc_coloris_mode {
+	TC_COLORIS_MODE_OFF = 0,
+	TC_COLORIS_MODE_ON,
+	TC_COLORIS_MODE_AUTO,
+};
+
 struct tc_coloris {
 	const char *color;
 	const char *code;
@@ -52,12 +58,14 @@ extern int tc_printv(FILE *fp, const char *fmt, va_list args)
 	 __attribute__((format(printf, 2, 0)));
 extern int tc_print(FILE *fp, const char *fmt, ...)
 	__attribute__((format(printf, 2, 3)));
-extern void tc_set_colors(const struct tc_coloris *colors);
+extern void tc_set_colors(const struct tc_coloris *colors,
+			  enum tc_coloris_mode mode);
 
 #pragma GCC visibility pop
 
 #ifdef TEXTUS_COLORIS_IMPL
 
+static __thread bool USE_COLOR;
 static __thread const struct tc_coloris *tc_colors;
 
 static const char *lookup(const char *color)
@@ -100,7 +108,6 @@ static char *parser(const char *buf)
 	char color[MAX_COLOR_NAME];
 	char *cptr = color;
 	bool in_color = false;
-	bool use_color = getenv("NO_COLOR") ? false : true;
 	size_t alloc = ALLOC_SZ;
 
 	while (*buf) {
@@ -127,7 +134,7 @@ static char *parser(const char *buf)
 		 */
 		in_color = false;
 		*cptr = '\0';
-		if (use_color)
+		if (USE_COLOR)
 			code = lookup(color);
 
 		if (code && *code == '\0') {
@@ -271,8 +278,22 @@ int tc_print(FILE *fp, const char *fmt, ...)
 /*
  * Set the colour map.
  */
-void tc_set_colors(const struct tc_coloris *colors)
+void tc_set_colors(const struct tc_coloris *colors, enum tc_coloris_mode mode)
 {
+	switch (mode) {
+	case TC_COLORIS_MODE_OFF:
+		USE_COLOR = false;
+		break;
+	case TC_COLORIS_MODE_ON:
+		USE_COLOR = true;
+		break;
+	case TC_COLORIS_MODE_AUTO:
+		if (getenv("NO_COLOR"))
+			USE_COLOR = false;
+		else
+			USE_COLOR = true;
+	}
+
 	tc_colors = colors;
 }
 

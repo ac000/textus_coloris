@@ -4,13 +4,41 @@ Simple "library" for doing colourised console output.
 
 # API
 
+```C
+enum tc_coloris_mode {
+        TC_COLORIS_MODE_OFF,
+        TC_COLORIS_MODE_ON,
+        TC_COLORIS_MODE_AUTO,
+};
+```
+
 There are five functions
 
 ```C
-void tc_set_colors(const struct tc_coloris *colors);
+void tc_set_colors(const struct tc_coloris *colors, enum tc_coloris_mode mode);
 ```
 
-This is to set the colour map.
+This is to set the colour map. *mode* can be one of *enum tc_coloris_mode*
+which produces the following behaviour
+
+```C
+TC_COLORIS_MODE_OFF
+```
+
+Forces colour output off..
+
+```C
+TC_COLORIS_MODE_ON
+```
+
+Forces colour output on, regardless of the [NO\_COLOR](#nocolor) setting.
+
+```C
+TC_COLORIS_MODE_AUTO
+```
+
+Obey the NO\_COLOR environment variable.
+
 
 ```C
 int tc_print(FILE *fp, const char *fmt, ...);
@@ -71,7 +99,7 @@ static const struct tc_coloris colors[] = {
 then set it with
 
 ```C
-tc_set_colors(colors);
+tc_set_colors(colors, TC_COLORIS_MODE_AUTO);
 ```
 
 Then you can do stuff like
@@ -93,7 +121,7 @@ Otherwise the functionality is the same.
 
 There are examples of usage under _header-only/_ & _split-out/_
 
-# NO\_COLOR
+# NO_COLOR
 
 This obeys the [NO\_COLOR](https://no-color.org/) environment variable.
 

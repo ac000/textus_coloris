@@ -56,7 +56,7 @@ int main(void)
 {
 	char *cstr;
 
-	tc_set_colors(colors);
+	tc_set_colors(colors, TC_COLORIS_MODE_AUTO);
 
 	tc_print(stdout, "This is #RED#RED#RST# text\n");
 

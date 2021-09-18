@@ -121,6 +121,23 @@ Otherwise the functionality is the same.
 
 There are examples of usage under _header-only/_ & _split-out/_
 
+### Build
+
+On Linux
+
+    $ make
+
+in either of the _header-only/_ & _split-out/_ directories.
+
+On FreeBSD
+
+    $ gmake
+
+or if GCC isn't installed, it will build cleanly with clang
+
+    $ gmake CC=clang
+
+
 # NO_COLOR
 
 This obeys the [NO\_COLOR](https://no-color.org/) environment variable.

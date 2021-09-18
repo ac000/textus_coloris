@@ -25,7 +25,7 @@ which produces the following behaviour
 TC_COLORIS_MODE_OFF
 ```
 
-Forces colour output off..
+Forces colour output off.
 
 ```C
 TC_COLORIS_MODE_ON
@@ -140,7 +140,8 @@ or if GCC isn't installed, it will build cleanly with clang
 
 # NO_COLOR
 
-This obeys the [NO\_COLOR](https://no-color.org/) environment variable.
+This obeys the [NO\_COLOR](https://no-color.org/) environment variable when
+using _TC\_COLORIS\_MODE\_AUTO_
 
 # Thread safety
 

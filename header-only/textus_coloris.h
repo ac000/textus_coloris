@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (c) 2021 Andrew Clayton
+ * Copyright (c) 2021-2022 Andrew Clayton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,6 +27,7 @@
 #ifndef _TEXTUS_COLORIS_H_
 #define _TEXTUS_COLORIS_H_
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -81,30 +82,38 @@ static const char *lookup(const char *color)
 }
 
 #define ALLOC_SZ	64
-static void *srealloc(char **base, size_t extra, char **ptr, size_t *alloc,
-		      char **sptr)
+static void srealloc(char **base, size_t extra, char **ptr, size_t *alloc,
+		     char **sptr)
 {
-	size_t len = *ptr - *base;
-	size_t slen = *sptr - *base;
+	void *ret;
+	ptrdiff_t len = *ptr - *base;
+	ptrdiff_t slen = *sptr - *base;
 
 	if (len + extra < *alloc)
-		return *base;
+		return;
 
-	*base = realloc(*base, *alloc + ALLOC_SZ);
+	ret = realloc(*base, *alloc + ALLOC_SZ);
+	if (!ret) {
+		free(*base);
+		*base = NULL;
+		return;
+	}
+	*base = ret;
+
 	*alloc += ALLOC_SZ;
 
 	*ptr = *base + len;
 	*sptr = *base + slen;
 
-	return *base;
+	return;
 }
 
 #define MAX_COLOR_NAME		32
 static char *parser(const char *buf)
 {
-	char *new = malloc(ALLOC_SZ);
-	char *ptr = new;
-	char *sptr = new;
+	char *p = malloc(ALLOC_SZ);
+	char *ptr = p;
+	char *sptr = p;
 	char color[MAX_COLOR_NAME];
 	char *cptr = color;
 	bool in_color = false;
@@ -143,7 +152,9 @@ static char *parser(const char *buf)
 			size_t clen = strlen(code);
 
 			ptr = sptr;
-			new = srealloc(&new, clen, &ptr, &alloc, &sptr);
+			srealloc(&p, clen, &ptr, &alloc, &sptr);
+			if (!p)
+				return NULL;
 			memcpy(ptr, code, clen);
 			ptr += clen - 1;
 		} else {
@@ -160,13 +171,15 @@ static char *parser(const char *buf)
 		}
 
 next:
-		new = srealloc(&new, 1, &ptr, &alloc, &sptr);
+		srealloc(&p, 1, &ptr, &alloc, &sptr);
+		if (!p)
+			return NULL;
 		buf++;
 		ptr++;
 	}
 	*ptr = '\0';
 
-	return new;
+	return p;
 }
 
 static char *cstring(const char *fmt, va_list args)
@@ -188,15 +201,13 @@ static char *cstring(const char *fmt, va_list args)
 		goto out_vargs;
 
 	len = vsnprintf(buf, buf_sz, fmt, args2);
-	if (len < 0) {
-		free(buf);
+	if (len < 0)
 		goto out_vargs;
-	}
 
 	cstr = parser(buf);
-	free(buf);
 
 out_vargs:
+	free(buf);
 	va_end(args2);
 
 	return cstr;
